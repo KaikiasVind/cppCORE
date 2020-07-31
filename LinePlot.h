@@ -18,7 +18,7 @@ public:
 	void setYLabel(QString ylabel);
 	void setYRange(double ymin, double ymax);
 
-	void store(QString filename);
+    void store(QString filename, bool changeXTicks = false, QVector<double> markerPoints = QVector<double>());
 
 protected:
 	//line representation

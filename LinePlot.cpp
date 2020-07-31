@@ -50,7 +50,7 @@ void LinePlot::setYRange(double ymin, double ymax)
 	yrange_set_ = true;
 }
 
-void LinePlot::store(QString filename)
+void LinePlot::store(QString filename, bool changeXTicks, QVector<double> markerPoints)
 {
 	//check if python is installed
 	QString python_exe = QStandardPaths::findExecutable("python");
@@ -78,12 +78,13 @@ void LinePlot::store(QString filename)
 		{
 			foreach(double value, line.values)
 			{
-				min = std::min(value, min);
+                min = std::min({0., value, min});
 				max = std::max(value, max);
 			}
 		}
 		ymin_ = min-0.01*(max-min);
 		ymax_ = max+0.01*(max-min);;
+        ymax_ *= 1.1;
 	}
 	if(BasicStatistics::isValidFloat(ymin_) && BasicStatistics::isValidFloat(ymax_))
 	{
@@ -100,18 +101,36 @@ void LinePlot::store(QString filename)
 		xvaluestring += "],";
 	}
 	foreach(const PlotLine& line, lines_)
-	{
-		QString valuestring = "[";
+    {
+        QString markerString;
+        if (!markerPoints.isEmpty()) {
+            markerString = "[" + QString::number(markerPoints.at(0));
+            for (int i = 1; i < markerPoints.length(); i++)
+                markerString += "," + QString::number(markerPoints.at(i));
+            markerString += "]";
+        }
+
+        QString valuestring = "[";
+        QString xTickValues = "(";
 		if (line.values.count()>0)
 		{
 			valuestring += QString::number(line.values[0]);
 			for (int i=1; i<line.values.count(); ++i)
 			{
 				valuestring += ","+QString::number(line.values[i]);
+                xTickValues += "'" + QString::number(i) + "x',";
 			}
 		}
 		valuestring += "]";
-		script.append("plt.plot(" + xvaluestring + valuestring + ", label='" + line.label + "')");
+        xTickValues += "'" + QString::number(line.values.count()) + "x')";
+
+        if (markerPoints.isEmpty())
+            script.append("plt.plot(" + xvaluestring + valuestring + ", label='" + line.label + "')");
+        else
+            script.append("plt.plot(" + xvaluestring + valuestring + ", '-gD', markevery=" + markerString + "', label='" + line.label + "')");
+
+        if (changeXTicks)
+            script.append("plt.xticks(arange(1," + QString::number(line.values.count() + 1) + ", step=1)," + xTickValues + ")");
 
 	}
 	if(lines_.count()==1)
