@@ -63,7 +63,7 @@ void LinePlot::store(QString filename, bool changeXTicks, QVector<double> marker
 	//create python script
 	QString scriptfile = Helper::tempFileName(".py");
 	QStringList script;
-	script.append("from numpy import nan");
+    script.append("from numpy import nan, arange");
 	script.append("import matplotlib as mpl");
 	script.append("mpl.use('Agg')");
 	script.append("import matplotlib.pyplot as plt");
@@ -83,7 +83,7 @@ void LinePlot::store(QString filename, bool changeXTicks, QVector<double> marker
 			}
 		}
 		ymin_ = min-0.01*(max-min);
-		ymax_ = max+0.01*(max-min);;
+        ymax_ = max+0.01*(max-min);;
         ymax_ *= 1.1;
 	}
 	if(BasicStatistics::isValidFloat(ymin_) && BasicStatistics::isValidFloat(ymax_))
@@ -101,7 +101,7 @@ void LinePlot::store(QString filename, bool changeXTicks, QVector<double> marker
 		xvaluestring += "],";
 	}
 	foreach(const PlotLine& line, lines_)
-    {
+	{
         QString markerString;
         if (!markerPoints.isEmpty()) {
             markerString = "[" + QString::number(markerPoints.at(0));
@@ -127,10 +127,10 @@ void LinePlot::store(QString filename, bool changeXTicks, QVector<double> marker
         if (markerPoints.isEmpty())
             script.append("plt.plot(" + xvaluestring + valuestring + ", label='" + line.label + "')");
         else
-            script.append("plt.plot(" + xvaluestring + valuestring + ", '-gD', markevery=" + markerString + "', label='" + line.label + "')");
+            script.append("plt.plot(" + xvaluestring + valuestring + ", '-gD', markevery=" + markerString + ", label='" + line.label + "')");// + markerString + ")");
 
         if (changeXTicks)
-            script.append("plt.xticks(arange(1," + QString::number(line.values.count() + 1) + ", step=1)," + xTickValues + ")");
+            script.append("plt.xticks(arange(1," + QString::number(line.values.count() + 1) + ",step=1)," + xTickValues + ")");
 
 	}
 	if(lines_.count()==1)
